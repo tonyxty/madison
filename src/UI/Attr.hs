@@ -24,6 +24,12 @@ colorToAttr Green = greenA
 colorToAttr Yellow = yellowA
 colorToAttr Blue = blueA
 
+rightAttr :: AttrName
+rightAttr = greenA
+
+wrongAttr :: AttrName
+wrongAttr = redA
+
 attributeMap :: AttrMap
 attributeMap = attrMap defAttr [
         (redA, fg $ rgbColor 255 0 0),
