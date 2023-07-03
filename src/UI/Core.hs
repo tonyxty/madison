@@ -14,7 +14,8 @@ drawCore :: CoreState -> Widget n
 drawCore state = borderWithLabel (str "Wisconsin Card Sorting Test") . center . vBox $ hCenter <$> [
         hBox $ drawCard <$> state^.board.cardSet,
         drawCard $ state^.board.target,
-        maybe (str ".....") flagStr $ state^.flag
+        maybe (str ".....") flagStr $ state^.flag,
+        padTop Max $ str "Press q to finish the test and see the report.  Press Esc to quit."
     ]
     where
     flagStr :: Bool -> Widget n
