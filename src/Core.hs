@@ -6,7 +6,7 @@ import Stats
 
 import Data.Function (on)
 import System.Random (StdGen)
-import Control.Lens (makeLenses, use, assign, zoom)
+import Control.Lens (makeLenses, use, assign, zoom, _1, _2)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
 import Control.Monad (when, unless)
@@ -24,6 +24,7 @@ makeLenses ''Board
 data CoreState = CoreState {
     _board :: Board,
     _category :: Task,
+    _progress :: Int,
     _flag :: Maybe Bool,
     _lastCat :: Maybe Task,
     _gen :: StdGen,
@@ -34,26 +35,13 @@ data CoreState = CoreState {
 
 makeLenses ''CoreState
 
-match :: Task -> Card -> Card -> Bool
-match Number = (==) `on` _number
-match Shape = (==) `on` _shape
-match Color = (==) `on` _color
-
-onChoiceMade :: MonadState CoreState m => Int -> m ()
-onChoiceMade n = do
-    task <- use category
-    lastTask <- use lastCat
-    card <- use $ board.response
-    cards <- use $ board.stimuli
-    let chosen = cards !! n
-    let res = match task card chosen
-    flag .= Just res
-
-    unless res $ stats.err %= (+1)
-    let pres = case lastTask of
-            Just lastTask -> match lastTask card chosen
-            Nothing -> False
-    when (not res && pres) $ stats.preservation %= (+1)
+match :: Card -> Card -> Task -> Bool
+match x y t = match' t x y
+    where
+    match' :: Task -> Card -> Card -> Bool
+    match' Number = (==) `on` _number
+    match' Shape = (==) `on` _shape
+    match' Color = (==) `on` _color
 
 newBoard :: MonadRandom m => m Board
 newBoard = Board <$> randomCardSet <*> randomCard
@@ -63,14 +51,36 @@ firstTrial = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task Nothing Nothing g 0 True (Stats 0 0 0 0)
+    return $ CoreState board task 0 Nothing Nothing g 0 True (Stats 0 0 0 0 0)
 
-nextTrial :: State CoreState ()
-nextTrial = do
-    (zoom gen . state $ runRand newBoard) >>= assign board
+onChoiceMade :: Int -> State CoreState ()
+onChoiceMade n = do
+    -- match the card chosen with response card
+    card <- use $ board.response
+    cards <- use $ board.stimuli
+    let chosen = cards !! n
+    res <- match card chosen <$> use category
+    pres <- maybe False (match card chosen) <$> use lastCat
+    flag .= Just res
+
+    -- update stats
+    stats.trial += 1
+    unless res $ stats.err += 1
+    when (not res && pres) $ stats.preservation += 1
+
+    -- draw new cards
+    board <~ (zoom gen . state $ runRand newBoard)
     time .= 0
-    stats.trial %= (+1)
-    numTrial <- use $ stats.trial
-    when (numTrial `mod` 10 == 0) $ do
-        use category >>= assign lastCat . Just
-        (zoom gen . state $ runRand randomEnum) >>= assign category
+
+    -- make (or lose) progress
+    if res
+        then do
+            current <- progress <+= 1
+            when (current == 10) $ do
+                -- new category
+                stats.complete += 1
+                progress .= 0
+                lastCat <~ Just <$> use category
+                category <~ (zoom gen . state $ runRand randomEnum)
+        else
+            progress .= 0

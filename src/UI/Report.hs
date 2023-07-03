@@ -9,6 +9,7 @@ import Control.Lens.Operators
 
 drawReport :: Stats -> Widget n
 drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . vBox $ strWrap <$> [
+        "Completed categories: " ++ show (stats^.complete),
         "Total number of trials: " ++ show (stats^.trial),
         "Total number of errors: " ++ show (stats^.err),
         "Preservation errors: " ++ show (stats^.preservation)
