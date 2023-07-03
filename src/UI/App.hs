@@ -40,6 +40,4 @@ app = App {
 }
 
 appMain :: IO ()
-appMain = do
-    state <- evalRandIO firstTrial
-    void $ defaultMain app state
+appMain = evalRandIO firstTrial >>= void . defaultMain app
