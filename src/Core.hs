@@ -28,6 +28,7 @@ data CoreState = CoreState {
     _lastTask :: Maybe Task,
     _gen :: StdGen,
     _time :: Int,
+    _running :: Bool,
     _stats :: Stats
 }
 
@@ -62,7 +63,7 @@ firstTrial = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task Nothing Nothing g 0 (Stats 0 0 0 0)
+    return $ CoreState board task Nothing Nothing g 0 True (Stats 0 0 0 0)
 
 nextTrial :: State CoreState ()
 nextTrial = do
