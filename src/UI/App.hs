@@ -2,10 +2,10 @@ module UI.App where
 
 import Core
 import Card
+import Stats
 import UI.Card
 import UI.Attr
 import UI.Core
-import Stats
 
 import Brick (Widget, App (..), attrMap, BrickEvent (..), EventM, halt, defaultMain, neverShowCursor)
 import Graphics.Vty (defAttr, Event (EvKey), Key (..))

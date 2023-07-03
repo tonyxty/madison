@@ -7,6 +7,6 @@ main :: IO ()
 main = do
     stats <- appMain
     putStrLn "=== REPORT ==="
-    putStrLn $ "total trials: " ++ show (_totalTrial stats)
+    putStrLn $ "total trials: " ++ show (_trial stats)
     putStrLn $ "total errors: " ++ show (_err stats)
     putStrLn $ "preservation errors: " ++ show (_preservation stats)

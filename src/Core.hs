@@ -9,7 +9,7 @@ import System.Random (StdGen)
 import Control.Lens (makeLenses, use, assign, zoom)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
-import Control.Monad (when)
+import Control.Monad (when, unless)
 import Control.Monad.State (State, MonadState (..))
 
 data Task = Number | Shape | Color deriving (Enum, Bounded, Show)
@@ -24,7 +24,6 @@ makeLenses ''Board
 data CoreState = CoreState {
     _board :: Board,
     _task :: Task,
-    _trial :: Int,
     _flag :: Maybe Bool,
     _lastTask :: Maybe Task,
     _gen :: StdGen,
@@ -49,8 +48,7 @@ onChoiceMade n = do
     let res = match task' card' chosen
     flag .= Just res
 
-    stats.totalTrial %= (+1)
-    when (not res) $ stats.err %= (+1)
+    unless res $ stats.err %= (+1)
     let pres = case lastTask' of
             Just lastTask' -> match lastTask' card' chosen
             Nothing -> False
@@ -64,14 +62,14 @@ firstTrial = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task 0 Nothing Nothing g 0 (Stats 0 0 0 0)
+    return $ CoreState board task Nothing Nothing g 0 (Stats 0 0 0 0)
 
 nextTrial :: State CoreState ()
 nextTrial = do
     (zoom gen . state $ runRand newBoard) >>= assign board
     time .= 0
-    trial %= (+1)
-    numTrial <- use trial
+    stats.trial %= (+1)
+    numTrial <- use $ stats.trial
     when (numTrial `mod` 10 == 0) $ do
-        Just <$> use task >>= assign lastTask
+        use task >>= assign lastTask . Just
         (zoom gen . state $ runRand randomEnum) >>= assign task
