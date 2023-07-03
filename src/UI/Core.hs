@@ -12,8 +12,8 @@ import Control.Lens.Operators
 
 drawCore :: CoreState -> Widget n
 drawCore state = borderWithLabel (str "Wisconsin Card Sorting Test") . center . vBox $ hCenter <$> [
-        hBox $ drawCard <$> state^.board.cardSet,
-        drawCard $ state^.board.target,
+        hBox $ drawCard <$> state^.board.stimuli,
+        drawCard $ state^.board.response,
         maybe (str ".....") flagStr $ state^.flag,
         padTop Max $ str "Press q to finish the test and see the report.  Press Esc to quit."
     ]

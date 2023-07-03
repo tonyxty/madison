@@ -15,17 +15,17 @@ import Control.Monad.State (State, MonadState (..))
 data Task = Number | Shape | Color deriving (Enum, Bounded, Show)
 
 data Board = Board {
-    _cardSet :: [Card],
-    _target :: Card
+    _stimuli :: [Card],
+    _response :: Card
 } deriving Show
 
 makeLenses ''Board
 
 data CoreState = CoreState {
     _board :: Board,
-    _task :: Task,
+    _category :: Task,
     _flag :: Maybe Bool,
-    _lastTask :: Maybe Task,
+    _lastCat :: Maybe Task,
     _gen :: StdGen,
     _time :: Int,
     _running :: Bool,
@@ -41,17 +41,17 @@ match Color = (==) `on` _color
 
 onChoiceMade :: MonadState CoreState m => Int -> m ()
 onChoiceMade n = do
-    task' <- use task
-    lastTask' <- use lastTask
-    card' <- use $ board.target
-    cards <- use $ board.cardSet
+    task <- use category
+    lastTask <- use lastCat
+    card <- use $ board.response
+    cards <- use $ board.stimuli
     let chosen = cards !! n
-    let res = match task' card' chosen
+    let res = match task card chosen
     flag .= Just res
 
     unless res $ stats.err %= (+1)
-    let pres = case lastTask' of
-            Just lastTask' -> match lastTask' card' chosen
+    let pres = case lastTask of
+            Just lastTask -> match lastTask card chosen
             Nothing -> False
     when (not res && pres) $ stats.preservation %= (+1)
 
@@ -72,5 +72,5 @@ nextTrial = do
     stats.trial %= (+1)
     numTrial <- use $ stats.trial
     when (numTrial `mod` 10 == 0) $ do
-        use task >>= assign lastTask . Just
-        (zoom gen . state $ runRand randomEnum) >>= assign task
+        use category >>= assign lastCat . Just
+        (zoom gen . state $ runRand randomEnum) >>= assign category
