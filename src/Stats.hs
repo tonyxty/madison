@@ -8,6 +8,7 @@ data Stats = Stats {
     _complete :: Int,
     _err :: Int,
     _perseveration :: Int,
+    _firstCat :: Int,
     _tle :: Int
 }
 

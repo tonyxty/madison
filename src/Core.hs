@@ -51,7 +51,7 @@ firstTrial = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task 0 Nothing Nothing g 0 True (Stats 0 0 0 0 0)
+    return $ CoreState board task 0 Nothing Nothing g 0 True (Stats 0 0 0 0 0 0)
 
 onChoiceMade :: Int -> State CoreState Bool
 onChoiceMade n = do
@@ -77,7 +77,8 @@ onChoiceMade n = do
             current <- progress <+= 1
             when (current == 10) $ do
                 -- new category
-                stats.complete += 1
+                cat <- stats.complete <+= 1
+                when (cat == 1) $ stats.firstCat <~ use (stats.trial)
                 progress .= 0
                 lastCat <~ Just <$> use category
                 category <~ (zoom gen . state $ runRand randomEnum)
