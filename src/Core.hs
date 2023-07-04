@@ -6,7 +6,7 @@ import Stats
 
 import Data.Function (on)
 import System.Random (StdGen)
-import Control.Lens (makeLenses, use, assign, zoom, _1, _2)
+import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
 import Control.Monad (when, unless)
@@ -53,12 +53,11 @@ firstTrial = do
     g <- liftRand $ \g -> (g, g)
     return $ CoreState board task 0 Nothing Nothing g 0 True (Stats 0 0 0 0 0)
 
-onChoiceMade :: Int -> State CoreState ()
+onChoiceMade :: Int -> State CoreState Bool
 onChoiceMade n = do
     -- match the card chosen with response card
     card <- use $ board.response
-    cards <- use $ board.stimuli
-    let chosen = cards !! n
+    chosen <- use $ board.stimuli.to (!!n)
     res <- match card chosen <$> use category
     pres <- maybe False (match card chosen) <$> use lastCat
     flag .= Just res
@@ -84,3 +83,5 @@ onChoiceMade n = do
                 category <~ (zoom gen . state $ runRand randomEnum)
         else
             progress .= 0
+
+    use $ stats.complete.to (<6)

@@ -22,7 +22,7 @@ handleEvent (VtyEvent (EvKey (KChar c) [])) = do
         isRunning <- use running
         if isRunning
             then if '1' <= c && c <= '4'
-                then state . runState . onChoiceMade $ fromEnum c - fromEnum '1'
+                then running <~ (state . runState . onChoiceMade $ fromEnum c - fromEnum '1')
                 else when (c == 'q') $ running .= False
             else halt
 handleEvent _ = return ()
