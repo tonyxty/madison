@@ -59,13 +59,13 @@ onChoiceMade n = do
     card <- use $ board.response
     chosen <- use $ board.stimuli.to (!!n)
     res <- match card chosen <$> use category
-    pres <- maybe False (match card chosen) <$> use lastCat
+    pers <- maybe False (match card chosen) <$> use lastCat
     flag .= Just res
 
     -- update stats
     stats.trial += 1
     unless res $ stats.err += 1
-    when (not res && pres) $ stats.preservation += 1
+    when (not res && pers) $ stats.perseveration += 1
 
     -- draw new cards
     board <~ (zoom gen . state $ runRand newBoard)

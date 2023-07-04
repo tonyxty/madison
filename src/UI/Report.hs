@@ -12,5 +12,5 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . vBox $ 
         "Completed categories: " ++ show (stats^.complete),
         "Total number of trials: " ++ show (stats^.trial),
         "Total number of errors: " ++ show (stats^.err),
-        "Preservation errors: " ++ show (stats^.preservation)
+        "Perseveration errors: " ++ show (stats^.perseveration)
     ]
