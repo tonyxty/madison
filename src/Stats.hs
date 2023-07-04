@@ -9,7 +9,8 @@ data Stats = Stats {
     _err :: Int,
     _perseveration :: Int,
     _firstCat :: Int,
-    _tle :: Int
+    _time :: Int,
+    _errTime :: Int
 }
 
 makeLenses ''Stats

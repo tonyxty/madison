@@ -30,6 +30,7 @@ library
         MonadRandom ^>= 0.6,
         random ^>= 1.2.0.0,
         random-shuffle ^>= 0.0.4,
+        time ^>= 1.12.0,
         brick ^>= 1.9,
         vty,
         lens

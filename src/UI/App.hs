@@ -13,8 +13,10 @@ import Graphics.Vty (defAttr, Event (EvKey), Key (..))
 import Control.Monad (void, when)
 import Control.Monad.Random (evalRandIO)
 import Control.Monad.State (runState, state)
+import Control.Monad.IO.Class (liftIO)
 import Control.Lens.Operators
 import Control.Lens (use)
+import Data.Time.Clock.POSIX (getPOSIXTime)
 
 handleEvent :: BrickEvent n e -> EventM n CoreState ()
 handleEvent (VtyEvent (EvKey KEsc [])) = halt
@@ -22,7 +24,9 @@ handleEvent (VtyEvent (EvKey (KChar c) [])) = do
         isRunning <- use running
         if isRunning
             then if '1' <= c && c <= '4'
-                then running <~ (state . runState . onChoiceMade $ fromEnum c - fromEnum '1')
+                then do
+                    t <- liftIO getPOSIXTime
+                    running <~ (state . runState $ onChoiceMade (fromEnum c - fromEnum '1') t)
                 else when (c == 'q') $ running .= False
             else halt
 handleEvent _ = return ()
@@ -40,4 +44,7 @@ app = App {
 }
 
 appMain :: IO ()
-appMain = evalRandIO firstTrial >>= void . defaultMain app
+appMain = do
+    t <- getPOSIXTime
+    state <- evalRandIO $ firstTrial t
+    void $ defaultMain app state

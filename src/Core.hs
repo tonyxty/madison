@@ -5,12 +5,15 @@ import Card
 import Stats
 
 import Data.Function (on)
-import System.Random (StdGen)
+import Data.Fixed (Fixed(..))
 import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
 import Control.Monad (when, unless)
 import Control.Monad.State (State, MonadState (..))
+import System.Random (StdGen)
+import Data.Time.Clock.POSIX (POSIXTime)
+import Data.Time (nominalDiffTimeToSeconds)
 
 data Task = Number | Shape | Color deriving (Enum, Bounded, Show)
 
@@ -28,7 +31,7 @@ data CoreState = CoreState {
     _flag :: Maybe Bool,
     _lastCat :: Maybe Task,
     _gen :: StdGen,
-    _time :: Int,
+    _timestamp :: POSIXTime,
     _running :: Bool,
     _stats :: Stats
 }
@@ -46,30 +49,33 @@ match x y t = match' t x y
 newBoard :: MonadRandom m => m Board
 newBoard = Board <$> randomCardSet <*> randomCard
 
-firstTrial :: Rand StdGen CoreState
-firstTrial = do
+firstTrial :: POSIXTime -> Rand StdGen CoreState
+firstTrial t = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task 0 Nothing Nothing g 0 True (Stats 0 0 0 0 0 0)
+    return $ CoreState board task 0 Nothing Nothing g t True (Stats 0 0 0 0 0 0 0)
 
-onChoiceMade :: Int -> State CoreState Bool
-onChoiceMade n = do
+onChoiceMade :: Int -> POSIXTime -> State CoreState Bool
+onChoiceMade n t' = do
     -- match the card chosen with response card
     card <- use $ board.response
     chosen <- use $ board.stimuli.to (!!n)
     res <- match card chosen <$> use category
     pers <- maybe False (match card chosen) <$> use lastCat
-    flag .= Just res
-
-    -- update stats
-    stats.trial += 1
-    unless res $ stats.err += 1
-    when (not res && pers) $ stats.perseveration += 1
+    flag ?= res
 
     -- draw new cards
     board <~ (zoom gen . state $ runRand newBoard)
-    time .= 0
+
+    -- update stats
+    t <- timestamp <<.= t'
+    let (MkFixed pico) = nominalDiffTimeToSeconds (t' - t)
+    let dt = fromIntegral $ pico `div` 1000000000
+    stats.trial += 1
+    stats.time += dt
+    unless res $ stats.err += 1 >> stats.errTime += dt
+    when (not res && pers) $ stats.perseveration += 1
 
     -- make (or lose) progress
     if res
