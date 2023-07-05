@@ -16,12 +16,12 @@ import Control.Lens.Operators
 import Control.Lens (use)
 import Data.Time.Clock.POSIX (getPOSIXTime)
 
-handleEvent :: BrickEvent n e -> EventM n CoreState ()
+handleEvent :: BrickEvent () e -> EventM () CoreState ()
 handleEvent event = do
     isRunning <- use running
     if isRunning then handleCoreEvent event else handleReportEvent event
 
-draw :: CoreState -> Widget n
+draw :: CoreState -> Widget ()
 draw state = if state^.running then drawCore state else drawReport (state^.stats)
 
 app :: App CoreState e ()

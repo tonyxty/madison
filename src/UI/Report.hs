@@ -3,9 +3,9 @@ module UI.Report where
 import Core
 import Stats
 
-import Brick (Widget, str, strWrap, hLimit, vBox, padLeft, Padding (Pad), padRight, BrickEvent (..), EventM, halt)
+import Brick (Widget, str, strWrap, hLimit, vBox, padLeft, Padding (Pad), padRight, BrickEvent (..), EventM, halt, viewport, ViewportType (..), ViewportScroll (vScrollBy), viewportScroll, withVScrollBars, VScrollBarOrientation (..))
 import Brick.Widgets.Border (borderWithLabel)
-import Brick.Widgets.Center (center)
+import Brick.Widgets.Center (center, hCenter)
 import Brick.Widgets.Table (table, surroundingBorder, alignRight, columnBorders, renderTable)
 import Graphics.Vty (Event(..), Key (..))
 import Data.List (transpose)
@@ -13,12 +13,18 @@ import Data.Fixed (Pico, Milli, Fixed (..))
 import Control.Lens.Operators
 import Numeric (showFFloat)
 
-handleReportEvent :: BrickEvent n e -> EventM n CoreState ()
+vpReport :: ViewportScroll ()
+vpReport = viewportScroll ()
+
+handleReportEvent :: BrickEvent () e -> EventM () CoreState ()
 handleReportEvent (VtyEvent (EvKey KEsc [])) = halt
+handleReportEvent (VtyEvent (EvKey KUp [])) = vScrollBy vpReport (-1)
+handleReportEvent (VtyEvent (EvKey KDown [])) = vScrollBy vpReport 1
 handleReportEvent _ = return ()
 
-drawReport :: Stats -> Widget n
+drawReport :: Stats -> Widget ()
 drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 .
+    withVScrollBars OnRight . viewport () Vertical . hCenter .
     renderTable . surroundingBorder False . columnBorders False . alignRight 2 . table $ contents
     where
     contents :: [[Widget n]]
