@@ -61,7 +61,8 @@ onChoiceMade n t' = do
     -- match the card chosen with response card
     card <- use $ board.response
     chosen <- use $ board.stimuli.to (!!n)
-    res <- match card chosen <$> use category
+    cat <- use category
+    let res = match card chosen cat
     pers <- maybe False (match card chosen) <$> use lastCat
     flag ?= res
 
@@ -82,10 +83,10 @@ onChoiceMade n t' = do
             current <- progress <+= 1
             when (current == 10) $ do
                 -- new category
-                cat <- stats.complete <+= 1
-                when (cat == 1) $ stats.firstCat <~ use (stats.trial)
+                completed <- stats.complete <+= 1
+                when (completed == 1) $ stats.firstCat <~ use (stats.trial)
                 progress .= 0
-                lastCat <~ Just <$> use category
+                lastCat ?= cat
                 category <~ (zoom gen . state $ runRand randomEnum)
         else
             progress .= 0
