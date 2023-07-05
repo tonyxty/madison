@@ -70,8 +70,7 @@ onChoiceMade n t' = do
 
     -- update stats
     t <- timestamp <<.= t'
-    let (MkFixed pico) = nominalDiffTimeToSeconds (t' - t)
-    let dt = fromIntegral $ pico `div` 1000000000
+    let dt = nominalDiffTimeToSeconds (t' - t)
     stats.trial += 1
     stats.time += dt
     unless res $ stats.err += 1 >> stats.errTime += dt

@@ -9,6 +9,7 @@ import Brick.Widgets.Center (center)
 import Brick.Widgets.Table (table, surroundingBorder, alignRight, columnBorders, renderTable)
 import Graphics.Vty (Event(..), Key (..))
 import Data.List (transpose)
+import Data.Fixed (Pico, Milli, Fixed (..))
 import Control.Lens.Operators
 import Numeric (showFFloat)
 
@@ -58,5 +59,5 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 .
     percentage :: Integral a => a -> a -> String
     percentage x y = showFFloat (Just 2) (fromIntegral x / fromIntegral y * 100.0) "%"
 
-    showTime :: Int -> String
-    showTime x = shows (x `div` 1000) $ '.' : shows (x `mod` 1000) "s"
+    showTime :: Pico -> String
+    showTime (MkFixed x) = shows (MkFixed (x `div` 1000000000) :: Milli) "s"
