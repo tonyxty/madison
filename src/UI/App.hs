@@ -8,28 +8,18 @@ import UI.Attr
 import UI.Core
 import UI.Report
 
-import Brick (Widget, App (..), attrMap, BrickEvent (..), EventM, halt, defaultMain, neverShowCursor)
-import Graphics.Vty (defAttr, Event (EvKey), Key (..))
-import Control.Monad (void, when)
+import Brick (Widget, App (..), attrMap, BrickEvent, EventM, defaultMain, neverShowCursor)
+import Control.Monad (void)
 import Control.Monad.Random (evalRandIO)
 import Control.Monad.State (runState, state)
-import Control.Monad.IO.Class (liftIO)
 import Control.Lens.Operators
 import Control.Lens (use)
 import Data.Time.Clock.POSIX (getPOSIXTime)
 
 handleEvent :: BrickEvent n e -> EventM n CoreState ()
-handleEvent (VtyEvent (EvKey KEsc [])) = halt
-handleEvent (VtyEvent (EvKey (KChar c) [])) = do
-        isRunning <- use running
-        if isRunning
-            then if '1' <= c && c <= '4'
-                then do
-                    t <- liftIO getPOSIXTime
-                    running <~ (state . runState $ onChoiceMade (fromEnum c - fromEnum '1') t)
-                else when (c == 'q') $ running .= False
-            else halt
-handleEvent _ = return ()
+handleEvent event = do
+    isRunning <- use running
+    if isRunning then handleCoreEvent event else handleReportEvent event
 
 draw :: CoreState -> Widget n
 draw state = if state^.running then drawCore state else drawReport (state^.stats)

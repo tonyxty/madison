@@ -1,18 +1,24 @@
 module UI.Report where
 
+import Core
 import Stats
 
-import Brick (Widget, str, strWrap, hLimit, vBox, padLeft, Padding (Pad), padRight)
+import Brick (Widget, str, strWrap, hLimit, vBox, padLeft, Padding (Pad), padRight, BrickEvent (..), EventM, halt)
 import Brick.Widgets.Border (borderWithLabel)
 import Brick.Widgets.Center (center)
 import Brick.Widgets.Table (table, surroundingBorder, alignRight, columnBorders, renderTable)
-import Control.Lens.Operators
+import Graphics.Vty (Event(..), Key (..))
 import Data.List (transpose)
+import Control.Lens.Operators
 import Numeric (showFFloat)
 
+handleReportEvent :: BrickEvent n e -> EventM n CoreState ()
+handleReportEvent (VtyEvent (EvKey KEsc [])) = halt
+handleReportEvent _ = return ()
+
 drawReport :: Stats -> Widget n
-drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . renderTable .
-    surroundingBorder False . columnBorders False . alignRight 2 . table $ contents
+drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 .
+    renderTable . surroundingBorder False . columnBorders False . alignRight 2 . table $ contents
     where
     contents :: [[Widget n]]
     contents = transpose [str <$> identifiers, padLeft (Pad 2) . padRight (Pad 5) . str <$> descriptions, str <$> values ]
