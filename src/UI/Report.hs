@@ -17,7 +17,7 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . renderT
     contents :: [[Widget n]]
     contents = transpose [str <$> identifiers, padLeft (Pad 2) . padRight (Pad 5) . str <$> descriptions, str <$> values ]
 
-    identifiers = ["cc", "rt", "ra", "rc", "re", "rep", "rct", "ret", "rf", "rpe"]
+    identifiers = ["cc", "rt", "ra", "rc", "re", "rep", "rct", "ret", "rf", "rpe", "rpep", "nrpe", "nrepep"]
     descriptions = [
             "Completed categories:",
             "Total response time:",
@@ -28,7 +28,10 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . renderT
             "Correct response time:",
             "Erroneous response time:",
             "Responses to complete first category:",
-            "Perseverative errors:"
+            "Perseverative errors:",
+            "Perseverative error percentage:",
+            "Non-perseverative errors:",
+            "Non-perseverative error percentage:"
         ]
     values = [
             show (stats^.complete),
@@ -40,7 +43,10 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 . renderT
             showTime (stats^.time - stats^.errTime),
             showTime (stats^.errTime),
             show (stats^.firstCat),
-            show (stats^.perseveration)
+            show (stats^.perseveration),
+            percentage (stats^.perseveration) (stats^.trial),
+            show (stats^.err - stats^.perseveration),
+            percentage (stats^.err - stats^.perseveration) (stats^.trial)
         ]
 
     percentage :: Integral a => a -> a -> String
