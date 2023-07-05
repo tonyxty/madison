@@ -50,16 +50,16 @@ drawReport stats = borderWithLabel (str "Report") . center . hLimit 80 .
             show (stats^.complete),
             showTime (stats^.time),
             show (stats^.trial),
-            show (stats^.trial - stats^.err),
+            show (stats^.correct),
             show (stats^.err),
             percentage (stats^.err) (stats^.trial),
-            showTime (stats^.time - stats^.errTime),
+            showTime (stats^.correctTime),
             showTime (stats^.errTime),
             show (stats^.firstCat),
             show (stats^.perseveration),
             percentage (stats^.perseveration) (stats^.trial),
-            show (stats^.err - stats^.perseveration),
-            percentage (stats^.err - stats^.perseveration) (stats^.trial)
+            show (stats^.nonPerseveration),
+            percentage (stats^.nonPerseveration) (stats^.trial)
         ]
 
     percentage :: Integral a => a -> a -> String
