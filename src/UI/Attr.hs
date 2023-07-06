@@ -4,7 +4,7 @@ import Card
 
 import Brick (fg)
 import Brick.AttrMap
-import Graphics.Vty.Attributes (defAttr, rgbColor)
+import Graphics.Vty (defAttr, rgbColor, red, green, yellow, blue)
 
 redA :: AttrName
 redA = attrName "red"
@@ -32,8 +32,8 @@ wrongAttr = redA
 
 attributeMap :: AttrMap
 attributeMap = attrMap defAttr [
-        (redA, fg $ rgbColor 255 0 0),
-        (greenA, fg $ rgbColor 0 255 0),
-        (yellowA, fg $ rgbColor 255 255 0),
-        (blueA, fg $ rgbColor 0 0 255)
+        (redA, fg red),
+        (greenA, fg green),
+        (yellowA, fg yellow),
+        (blueA, fg blue)
     ]
