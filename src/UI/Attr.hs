@@ -25,15 +25,17 @@ colorToAttr Yellow = yellowA
 colorToAttr Blue = blueA
 
 rightAttr :: AttrName
-rightAttr = greenA
+rightAttr = attrName "right"
 
 wrongAttr :: AttrName
-wrongAttr = redA
+wrongAttr = attrName "wrong"
 
 attributeMap :: AttrMap
 attributeMap = attrMap defAttr [
         (redA, fg red),
-        (greenA, fg green),
+        (greenA, fg $ rgbColor 0 255 135),
         (yellowA, fg yellow),
-        (blueA, fg blue)
+        (blueA, fg blue),
+        (rightAttr, fg green),
+        (wrongAttr, fg red)
     ]
