@@ -19,6 +19,7 @@ library
         Card
         Core
         Stats
+        Options
         UI.Attr
         UI.Card
         UI.Core
@@ -31,6 +32,7 @@ library
         random ^>= 1.2.0.0,
         random-shuffle ^>= 0.0.4,
         time ^>= 1.12.0,
+        optparse-applicative ^>= 0.18.0.0,
         brick ^>= 1.9,
         vty,
         lens

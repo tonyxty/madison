@@ -3,10 +3,11 @@ module Core where
 
 import Card
 import Stats
+import Options
 
 import Data.Function (on)
 import Data.Fixed (Fixed(..))
-import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to)
+import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to, Getter)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
 import Control.Monad (when, unless)
@@ -33,10 +34,14 @@ data CoreState = CoreState {
     _gen :: StdGen,
     _timestamp :: POSIXTime,
     _running :: Bool,
-    _stats :: Stats
+    _stats :: Stats,
+    _options :: Options
 }
 
 makeLenses ''CoreState
+
+notComplete :: Getter CoreState Bool
+notComplete = to $ \s -> (s^.stats.complete) < (s^.options.goalCat)
 
 match :: Card -> Card -> Task -> Bool
 match x y t = match' t x y
@@ -49,12 +54,12 @@ match x y t = match' t x y
 newBoard :: MonadRandom m => m Board
 newBoard = Board <$> randomCardSet <*> randomCard
 
-firstTrial :: POSIXTime -> Rand StdGen CoreState
-firstTrial t = do
+firstTrial :: POSIXTime -> Options -> Rand StdGen CoreState
+firstTrial t opt = do
     board <- newBoard
     task <- randomEnum
     g <- liftRand $ \g -> (g, g)
-    return $ CoreState board task 0 Nothing Nothing g t True (Stats 0 0 0 0 0 0 0)
+    return $ CoreState board task 0 Nothing Nothing g t True (Stats 0 0 0 0 0 0 0) opt
 
 onChoiceMade :: Int -> POSIXTime -> State CoreState Bool
 onChoiceMade n t' = do
@@ -91,4 +96,4 @@ onChoiceMade n t' = do
         else
             progress .= 0
 
-    use $ stats.complete.to (<6)
+    use notComplete

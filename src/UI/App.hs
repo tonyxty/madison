@@ -3,6 +3,7 @@ module UI.App where
 import Core
 import Card
 import Stats
+import Options
 import UI.Card
 import UI.Attr
 import UI.Core
@@ -15,6 +16,7 @@ import Control.Monad.State (runState, state)
 import Control.Lens.Operators
 import Control.Lens (use)
 import Data.Time.Clock.POSIX (getPOSIXTime)
+import Options.Applicative
 
 handleEvent :: BrickEvent () e -> EventM () CoreState ()
 handleEvent event = do
@@ -35,6 +37,7 @@ app = App {
 
 appMain :: IO ()
 appMain = do
+    opt <- execParser optParse
     t <- getPOSIXTime
-    state <- evalRandIO $ firstTrial t
+    state <- evalRandIO $ firstTrial t opt
     void $ defaultMain app state
