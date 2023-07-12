@@ -7,7 +7,7 @@ import Options
 
 import Data.Function (on)
 import Data.Fixed (Fixed(..))
-import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to, Getter)
+import Control.Lens (makeLenses, use, assign, zoom, _1, _2, to, Getter, Zoom)
 import Control.Lens.Operators
 import Control.Monad.Random (runRand, MonadRandom, Rand, liftRand)
 import Control.Monad (when, unless)
@@ -61,7 +61,7 @@ firstTrial t opt = do
     g <- liftRand $ \g -> (g, g)
     return $ CoreState board task 0 Nothing Nothing g t True (Stats 0 0 0 0 0 0 0) opt
 
-onChoiceMade :: Int -> POSIXTime -> State CoreState Bool
+onChoiceMade :: (MonadState CoreState m, Zoom (State StdGen) m StdGen CoreState) => Int -> POSIXTime -> m Bool
 onChoiceMade n t' = do
     -- match the card chosen with response card
     card <- use $ board.response
